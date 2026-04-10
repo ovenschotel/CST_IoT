@@ -1,0 +1,62 @@
+Command: ninja cleanbuild
+CMake Warning at C:/Espressif/frameworks/esp-idf-v5.5.3/components/partition_table/project_include.cmake:37 (message):
+  Partition table CSV file C:/Users/rosan/Desktop/MITM/partitions.csv not
+  found.  Change custom partition CSV path in menuconfig.
+Call Stack (most recent call first):
+  C:/Espressif/frameworks/esp-idf-v5.5.3/tools/cmake/build.cmake:469 (include)
+  C:/Espressif/frameworks/esp-idf-v5.5.3/tools/cmake/build.cmake:720 (__build_process_project_includes)
+  C:/Espressif/frameworks/esp-idf-v5.5.3/tools/cmake/project.cmake:741 (idf_build_process)
+  CMakeLists.txt:6 (project)
+
+
+Traceback (most recent call last):
+  File "C:\Espressif\frameworks\esp-idf-v5.5.3\components\partition_table\parttool.py", line 411, in <module>
+    main()
+  File "C:\Espressif\frameworks\esp-idf-v5.5.3\components\partition_table\parttool.py", line 380, in main
+    target = ParttoolTarget(**target_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Espressif\frameworks\esp-idf-v5.5.3\components\partition_table\parttool.py", line 95, in __init__
+    with open(partition_table_file, 'rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/rosan/Desktop/MITM/partitions.csv'
+Traceback (most recent call last):
+  File "C:\Espressif\frameworks\esp-idf-v5.5.3\components\partition_table\parttool.py", line 411, in <module>
+    main()
+  File "C:\Espressif\frameworks\esp-idf-v5.5.3\components\partition_table\parttool.py", line 380, in main
+    target = ParttoolTarget(**target_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Espressif\frameworks\esp-idf-v5.5.3\components\partition_table\parttool.py", line 95, in __init__
+    with open(partition_table_file, 'rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/rosan/Desktop/MITM/partitions.csv'
+Traceback (most recent call last):
+  File "C:\Espressif\frameworks\esp-idf-v5.5.3\components\partition_table\parttool.py", line 411, in <module>
+    main()
+  File "C:\Espressif\frameworks\esp-idf-v5.5.3\components\partition_table\parttool.py", line 380, in main
+    target = ParttoolTarget(**target_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Espressif\frameworks\esp-idf-v5.5.3\components\partition_table\parttool.py", line 95, in __init__
+    with open(partition_table_file, 'rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/rosan/Desktop/MITM/partitions.csv'
+Traceback (most recent call last):
+  File "C:\Espressif\frameworks\esp-idf-v5.5.3\components\partition_table\parttool.py", line 411, in <module>
+    main()
+  File "C:\Espressif\frameworks\esp-idf-v5.5.3\components\partition_table\parttool.py", line 380, in main
+    target = ParttoolTarget(**target_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Espressif\frameworks\esp-idf-v5.5.3\components\partition_table\parttool.py", line 95, in __init__
+    with open(partition_table_file, 'rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/rosan/Desktop/MITM/partitions.csv'
+Traceback (most recent call last):
+  File "C:\Espressif\frameworks\esp-idf-v5.5.3\components\partition_table\parttool.py", line 411, in <module>
+    main()
+  File "C:\Espressif\frameworks\esp-idf-v5.5.3\components\partition_table\parttool.py", line 380, in main
+    target = ParttoolTarget(**target_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Espressif\frameworks\esp-idf-v5.5.3\components\partition_table\parttool.py", line 95, in __init__
+    with open(partition_table_file, 'rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/rosan/Desktop/MITM/partitions.csv'
+ninja: error: unknown target 'cleanbuild'
