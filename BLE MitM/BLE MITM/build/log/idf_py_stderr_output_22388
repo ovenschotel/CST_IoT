@@ -1,2 +1,0 @@
-Command: ninja all
-ninja: error: 'C:/Users/rosan/Desktop/MITM/partitions.csv', needed by 'partition_table/partition-table.bin', missing and no known rule to make it
